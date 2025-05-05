@@ -1,0 +1,30 @@
+﻿app
+  components
+    CrearRestaurante.tsx
+  dashboard
+    page.tsx
+  login
+    page.tsx
+  favicon.ico
+  globals.css
+  layout.tsx
+  page.tsx
+lib
+  supabaseClient.ts
+public
+  file.svg
+  globe.svg
+  next.svg
+  vercel.svg
+  window.svg
+.gitignore
+eslint.config.mjs
+estructura_reducida.txt
+generar_tree.ps1
+next-env.d.ts
+next.config.ts
+package-lock.json
+package.json
+postcss.config.mjs
+README.md
+tsconfig.json

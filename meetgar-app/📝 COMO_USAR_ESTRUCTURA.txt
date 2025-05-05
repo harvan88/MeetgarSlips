@@ -1,0 +1,13 @@
+📌 CÓMO ACTUALIZAR Y ENVIAR LA ESTRUCTURA DEL PROYECTO A CHATGPT
+
+1. Asegurate de estar en la raíz del proyecto (por ejemplo: /meetgar-app).
+2. Ejecutá este comando en PowerShell:
+
+   powershell -ExecutionPolicy Bypass -File .\generar_tree.ps1
+
+3. Esto generará un archivo llamado:
+   estructura_reducida.txt
+
+4. Subí ese archivo en el nuevo chat de ChatGPT donde estés trabajando.
+
+💡 Consejo: hacelo cada vez que empieces un nuevo hilo o cambies la estructura del proyecto.
