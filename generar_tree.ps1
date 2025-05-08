@@ -1,5 +1,5 @@
 $exclude = @("node_modules", ".git", ".next", ".vscode", ".env.local")
-$maxDepth = 2
+$maxDepth = 7  # Puedes ajustar la profundidad si es necesario
 
 function Show-Tree($path, $prefix = "", $depth = 0) {
     if ($depth -gt $maxDepth) { return }
@@ -16,5 +16,7 @@ function Show-Tree($path, $prefix = "", $depth = 0) {
     }
 }
 
-Show-Tree "." | Out-File -Encoding UTF8 -FilePath ".\estructura_reducida.txt"
-Write-Host "✅ Archivo generado: estructura_reducida.txt"
+# Ruta específica a la carpeta meetgar-app
+$targetPath = "./meetgar-app"
+Show-Tree $targetPath | Out-File -Encoding UTF8 -FilePath ".\estructura_meetgar.txt"
+Write-Host "✅ Archivo generado: estructura_meetgar.txt"

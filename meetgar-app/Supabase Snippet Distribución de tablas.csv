@@ -1,0 +1,57 @@
+table_name,column_name,data_type,is_nullable,column_default
+orders,id,uuid,NO,gen_random_uuid()
+orders,user_id,uuid,YES,null
+orders,codigo_unico,text,YES,null
+orders,estado,text,YES,'abierta'::text
+orders,creado_en,timestamp without time zone,YES,now()
+orders,mesero_id,uuid,YES,null
+orders,restaurante_id,uuid,YES,null
+pagos,id,uuid,NO,gen_random_uuid()
+pagos,slip_producto_id,uuid,YES,null
+pagos,pagado_por_user_id,uuid,YES,null
+pagos,monto,numeric,YES,null
+pagos,metodo,text,YES,null
+pagos,creado_en,timestamp without time zone,YES,now()
+productos,id,uuid,NO,gen_random_uuid()
+productos,nombre,text,YES,null
+productos,descripcion,text,YES,null
+productos,precio,numeric,YES,null
+productos,imagen_url,text,YES,null
+productos,disponible,boolean,YES,true
+productos,restaurante_id,uuid,YES,null
+restaurantes,id,uuid,NO,gen_random_uuid()
+restaurantes,nombre,text,NO,null
+restaurantes,logo_url,text,YES,null
+restaurantes,codigo_unico,text,YES,null
+restaurantes,creado_en,timestamp without time zone,YES,now()
+restaurantes,owner_id,uuid,YES,null
+slip_autorizaciones,id,uuid,NO,gen_random_uuid()
+slip_autorizaciones,solicitante_id,uuid,YES,null
+slip_autorizaciones,order_id,uuid,YES,null
+slip_autorizaciones,estado,text,YES,'pendiente'::text
+slip_autorizaciones,creado_en,timestamp without time zone,YES,now()
+slip_productos,id,uuid,NO,gen_random_uuid()
+slip_productos,slip_id,uuid,YES,null
+slip_productos,producto_id,uuid,YES,null
+slip_productos,cantidad,integer,YES,null
+slip_productos,precio_unitario,numeric,YES,null
+slip_productos,total,numeric,YES,null
+slips,id,uuid,NO,gen_random_uuid()
+slips,order_id,uuid,YES,null
+slips,user_id,uuid,YES,null
+slips,estado,USER-DEFINED,YES,'pendiente'::estado_slip
+slips,comentario,text,YES,null
+slips,creado_en,timestamp without time zone,YES,now()
+slips,actualizado_en,timestamp without time zone,YES,now()
+slips,restaurante_id,uuid,YES,null
+ubicaciones,id,uuid,NO,gen_random_uuid()
+ubicaciones,user_id,uuid,YES,null
+ubicaciones,latitud,numeric,YES,null
+ubicaciones,longitud,numeric,YES,null
+ubicaciones,actualizado_en,timestamp without time zone,YES,now()
+users,id,uuid,NO,gen_random_uuid()
+users,nombre,text,YES,null
+users,email,text,YES,null
+users,imagen_url,text,YES,null
+users,creado_en,timestamp without time zone,YES,now()
+users,rol,USER-DEFINED,YES,'cliente'::rol_usuario
