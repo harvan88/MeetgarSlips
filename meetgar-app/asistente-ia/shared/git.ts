@@ -1,27 +1,28 @@
-import { execSync } from "child_process";
-import fs from "fs";
-import path from "path";
+import { execFileSync } from 'node:child_process';
+import { readFileSync, existsSync } from 'node:fs';
 
 /**
- * Obtiene el diff Git de un archivo respecto a HEAD.
+ * Devuelve el diff del archivo. Si no hay cambios o Git falla, devuelve ''.
  */
-export function getDiff(filePath: string): string {
+export function getDiff(absPath: string): string {
   try {
-    const diff = execSync(`git diff HEAD ${filePath}`, { encoding: "utf-8" });
-    return diff.trim() || "(sin cambios detectados)";
-  } catch (err) {
-    return "(error al calcular diff)";
-  }
-}
-
-/**
- * Lee el contenido actual del archivo desde el sistema de archivos.
- */
-export function getFileContent(filePath: string): string {
-  try {
-    const absolutePath = path.resolve(filePath);
-    return fs.readFileSync(absolutePath, "utf-8");
+    // execFileSync evita problemas de espacios y no requiere escapado manual
+    return execFileSync('git', ['diff', '--no-color', '--', absPath], {
+      encoding: 'utf8',
+    });
   } catch {
-    return "(error al leer archivo)";
+    return '';
   }
 }
+
+/**
+ * Devuelve el contenido actual del archivo. Si no existe, lanza un error claro.
+ */
+export function getFileContent(absPath: string): string {
+  if (!existsSync(absPath)) {
+    throw new Error(`Archivo no encontrado: ${absPath}`);
+  }
+  return readFileSync(absPath, 'utf8');
+}
+
+export default { getDiff, getFileContent };

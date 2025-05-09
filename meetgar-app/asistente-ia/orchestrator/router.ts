@@ -63,3 +63,6 @@ if (require.main === module) {
     process.exit(1);
   });
 }
+
+/* 👇  ESTA LÍNEA SOLUCIONA EL CONFLICTO CJS ↔ ESM */
+export { runAssistant as default };
