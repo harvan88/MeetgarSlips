@@ -1,13 +1,27 @@
-// asistente-ia/crearEstructura.ts
-import path from 'path'
-import { crearCarpetasBase } from '../utils/crearCarpetas.ts'
-import { crearArchivosBase } from '../utils/crearArchivosBase.ts'
+import fs from "fs";
+import path from "path";
 
-const baseDir = path.resolve(__dirname, '..')
+const roles = ["orquestador", "ui", "bd", "docs", "test"];
+const baseDir = path.resolve(__dirname, "../roles");
 
-console.log('🚀 Iniciando estructura avanzada de asistentes...\n')
+for (const role of roles) {
+  const rolePath = path.join(baseDir, role);
+  const contextPath = path.join(rolePath, "context");
+  const runtimePath = path.join(rolePath, "runtime");
+  const promptPath = path.join(rolePath, "prompt.md");
 
-crearCarpetasBase(baseDir)
-crearArchivosBase(baseDir)
+  [rolePath, contextPath, runtimePath].forEach((dir) => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`📁 Creada: ${dir}`);
+    }
+  });
 
-console.log('\n✅ Estructura completa lista para usar.')
+  if (!fs.existsSync(promptPath)) {
+    fs.writeFileSync(
+      promptPath,
+      `# Prompt del rol ${role}\n\nEspecificar aquí el comportamiento principal del asistente ${role}.`
+    );
+    console.log(`📝 Creado: ${promptPath}`);
+  }
+}

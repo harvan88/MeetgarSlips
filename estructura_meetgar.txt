@@ -1,53 +1,46 @@
-﻿public
-  file.svg
-  globe.svg
-  next.svg
-  vercel.svg
-  window.svg
-src
-  app
-    (app)
-      layout.tsx
-    api
-      set-ubicacion
-        route.ts
-      sync-user
-        route.ts
-    auth
-      callback
-        page.tsx
-      logout
-        route.ts
-    dashboard
-      page.tsx
-    login
-      page.tsx
-    restaurante
-      [codigo_unico]
-    favicon.ico
-    globals.css
-    layout.tsx
-    page.tsx
-  componentes
-    SignOutButto.tsx
-  lib
-    supabase
-      client.ts
-      server.ts
-      serverAction.ts
-    database.types.ts
-    supabaseClient.ts
-.gitignore
-eslint.config.mjs
-next-env.d.ts
-next.config.ts
-package-lock.json
-package.json
-postcss.config.mjs
-README.md
-src.7z
-src.zip
-src_final.zip
-Supabase Snippet Distribución de tablas.csv
-tailwind.config.js
-tsconfig.json
+﻿asistente-ia
+  cli
+    index.ts
+  roles
+    bd
+      context
+        .gitkeep
+      runtime
+        .gitkeep
+      assistant_id.txt
+      prompt.md
+    docs
+      context
+        .gitkeep
+      runtime
+        .gitkeep
+      assistant_id.txt
+      prompt.md
+    orquestador
+      context
+        .gitkeep
+      runtime
+        .gitkeep
+      assistant_id.txt
+      prompt.md
+    test
+      context
+        .gitkeep
+      runtime
+        .gitkeep
+      assistant_id.txt
+      prompt.md
+    ui
+      context
+        .gitkeep
+      runtime
+        .gitkeep
+      assistant_id.txt
+      prompt.md
+      thread_id.txt
+  scripts
+    bootstrap.ts
+    crearEstructura.ts
+  .env.example
+  assistants.json
+  README.md
