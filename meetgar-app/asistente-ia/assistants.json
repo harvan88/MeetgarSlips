@@ -1,7 +1,7 @@
 [
   {
     "role": "orquestador",
-    "model": "gpt-4-turbo",
+    "model": "gpt-4o",
     "promptPath": "roles/orquestador/prompt.md",
     "tools": [
       {
@@ -25,9 +25,11 @@
   },
   {
     "role": "ui",
-    "model": "gpt-4-turbo",
+    "model": "gpt-4o-mini",
     "promptPath": "roles/ui/prompt.md",
-    "tools": []
+    "tools": [
+      { "type": "code_interpreter" }
+    ]
   },
   {
     "role": "bd",
@@ -39,12 +41,16 @@
     "role": "docs",
     "model": "gpt-3.5-turbo",
     "promptPath": "roles/docs/prompt.md",
-    "tools": []
+    "tools": [
+      { "type": "file_search" }
+    ]
   },
   {
     "role": "test",
     "model": "gpt-3.5-turbo",
     "promptPath": "roles/test/prompt.md",
-    "tools": []
+    "tools": [
+      { "type": "code_interpreter" }
+    ]
   }
 ]
