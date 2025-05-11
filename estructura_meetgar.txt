@@ -79,7 +79,7 @@ src
     layout.tsx
     page.tsx
   componentes
-    SignOutButto.tsx
+    SignOutButton.tsx
   lib
     supabase
       client.ts

@@ -1,0 +1,8 @@
+# Python
+scripts-python/.venv/
+# Entornos virtuales de Python
+.venv/
+venv/
+ENV/
+env/
+scripts-python/.venv/
