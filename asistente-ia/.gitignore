@@ -1,0 +1,21 @@
+# Carpetas y archivos generados
+node_modules/
+dist/
+.temp/
+temp/
+
+# Entornos locales
+.env
+.env.*
+
+# Archivos de lock específicos
+pnpm-lock.yaml
+
+# Archivos del sistema / editor
+.DS_Store
+.vscode/
+*.log
+
+# Archivos temporales
+*.tmp
+*.swp

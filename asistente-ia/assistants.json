@@ -1,0 +1,65 @@
+[
+  {
+    "role": "orquestador",
+    "model": "gpt-4o",
+    "promptPath": "roles/orquestador/prompt.md",
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "resumir_conversacion",
+          "description": "Genera un resumen de la conversación hasta el momento.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "historial": {
+                "type": "string",
+                "description": "Texto completo de la conversación previa"
+              }
+            },
+            "required": [
+              "historial"
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "role": "ui",
+    "model": "gpt-4o-mini",
+    "promptPath": "roles/ui/prompt.md",
+    "tools": [
+      {
+        "type": "code_interpreter"
+      }
+    ],
+    "id": "asst_Ec2u8PtJmRB7QqwTbg7UUxFk"
+  },
+  {
+    "role": "bd",
+    "model": "gpt-3.5-turbo",
+    "promptPath": "roles/bd/prompt.md",
+    "tools": []
+  },
+  {
+    "role": "docs",
+    "model": "gpt-3.5-turbo",
+    "promptPath": "roles/docs/prompt.md",
+    "tools": [
+      {
+        "type": "file_search"
+      }
+    ]
+  },
+  {
+    "role": "test",
+    "model": "gpt-3.5-turbo",
+    "promptPath": "roles/test/prompt.md",
+    "tools": [
+      {
+        "type": "code_interpreter"
+      }
+    ]
+  }
+]

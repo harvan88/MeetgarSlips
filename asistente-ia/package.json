@@ -1,0 +1,20 @@
+{
+  "name": "asistente-ia",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "ia:review": "tsx cli/review.mts",
+    "ia:check": "tsx scripts/check-assistants.ts",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "openai": "^4.98.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.4",
+    "typescript": "^5.4.5",
+    "vitest": "^3.1.3"
+  }
+}
