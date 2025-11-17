@@ -926,20 +926,31 @@ export async function cleanupExpiredTokens() {
    - Si falla, guardar en tabla `webhook_failed_deliveries`
    - Sistemas externos pueden hacer polling como backup
 
+8. **✨ Autenticación Diferenciada por Tipo de Usuario**:
+   - **Staff (meseros, cocina, caja, barra, admin)**: Autenticación OBLIGATORIA
+     - Usar Supabase Auth con email/password o Google
+     - Control de roles y permisos
+     - Sesiones persistentes
+   - **Clientes**: Autenticación OPCIONAL (anónimos por defecto)
+     - Sistema funciona con sesión temporal/anónima
+     - Identificación por `session_id` temporal
+     - FUTURO: Opción de registrarse para historial de compras
+     - No es prioridad en MVP
+
 ### ⏳ Decisiones Pendientes
 
-- [ ] **Autenticación de clientes**: ¿Anónimos con sesión o login con Google/email?
 - [ ] **Manejo de productos compartidos**: ¿Cómo dividir "1 pizza entre 3 personas"?
 - [ ] **Tracking de ubicación**: ¿Es necesario si todo es por mesa?
 - [ ] **Integración con sistemas de pago**: ¿MercadoPago, Stripe, otros?
 - [ ] **Reportes y analítica**: ¿En este módulo o módulo separado?
 - [ ] **Control de stock en tiempo real**: ¿Necesario o suficiente con flag `disponible`?
+- [ ] **Método de autenticación staff**: ¿Email/password, Google, o ambos?
 
 ### 🤔 Preguntas para Definir (Actualizadas)
 
 1. ~~**Notificaciones en tiempo real**~~ - ✅ **RESUELTO**: Webhooks con retry
 2. ~~**Identificación de mesas**~~ - ✅ **RESUELTO**: QR de mesa incluye número, token para unirse
-3. **Autenticación de usuarios**: ¿Los clientes se autentican o son anónimos?
+3. ~~**Autenticación de usuarios**~~ - ✅ **RESUELTO**: Staff obligatorio, Clientes anónimos
 4. **Cancelaciones**: ¿Quién puede cancelar un pedido ya pagado?
 5. **Stock**: ¿Controlar disponibilidad en tiempo real o confiar en flag `disponible`?
 
