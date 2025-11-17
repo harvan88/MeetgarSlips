@@ -631,6 +631,281 @@ creado_en         timestamp
 
 ---
 
+## ✅ SISTEMA ELEGIDO: QR Dinámico + Enlace Compartible
+
+### 🎯 Decisión Final
+
+**Combinación perfecta de seguridad, conveniencia y flexibilidad**
+
+Cuando el primer usuario crea una orden, el sistema genera:
+1. **QR Dinámico** - Para escanear desde otro celular
+2. **Enlace Compartible** - Para enviar por chat (WhatsApp, Telegram, etc.)
+
+**Ambos apuntan al mismo token único y son igualmente válidos**
+
+### 📱 Flujo de Usuario Completo
+
+#### Primera Persona (Creador de la Orden)
+
+```
+1. Usuario A escanea QR de mesa (fijo, impreso en la mesa)
+   ↓
+2. Chat/IA detecta: "Primera vez en esta mesa"
+   ↓
+3. POST /api/orders
+   {
+     user_id: "user_a",
+     restaurante_id: "rest_123",
+     mesa: "5"
+   }
+   ↓
+4. MeetgarSlips crea orden y genera token único
+   ↓
+5. Response:
+   {
+     order_id: "order_abc123",
+     token: "tok_xyz789_secure_random",
+     join_url: "https://meetgar.app/join/tok_xyz789_secure_random",
+     qr_data: "https://meetgar.app/join/tok_xyz789_secure_random",
+     expires_at: "2025-11-18T15:30:00Z"  // 24 horas
+   }
+   ↓
+6. Chat muestra al usuario:
+   ┌─────────────────────────────────────┐
+   │  Tu Mesa 5 - Orden Creada          │
+   │                                     │
+   │  Invita a tus amigos:              │
+   │                                     │
+   │  [QR CODE AQUÍ]                    │
+   │                                     │
+   │  O comparte este enlace:           │
+   │  https://meetgar.app/join/tok_...  │
+   │  [📋 Copiar] [📤 Compartir]        │
+   └─────────────────────────────────────┘
+```
+
+#### Segunda Persona (Se Une a la Orden)
+
+**Opción A: Escanea QR**
+```
+1. Usuario B escanea QR mostrado en celular de Usuario A
+   ↓
+2. Browser abre: https://meetgar.app/join/tok_xyz789_secure_random
+   ↓
+3. Redirige al chat con token en URL
+   ↓
+4. Chat detecta token → POST /api/orders/join
+   {
+     token: "tok_xyz789_secure_random",
+     user_id: "user_b"
+   }
+   ↓
+5. MeetgarSlips valida token y asocia user_b a order_abc123
+   ↓
+6. Chat: "¡Te has unido a la orden de Mesa 5! ¿Qué deseas ordenar?"
+```
+
+**Opción B: Recibe Enlace por Chat**
+```
+1. Usuario A comparte enlace por WhatsApp a Usuario B
+   ↓
+2. Usuario B hace clic en el enlace
+   ↓
+3. [Mismo flujo que Opción A desde paso 2]
+```
+
+### 🔧 Implementación Técnica
+
+#### 1. API para Crear Orden
+
+```typescript
+// POST /api/orders
+export async function POST(request: Request) {
+  try {
+    const { user_id, restaurante_id, mesa } = await request.json()
+
+    // Crear orden
+    const order = await createOrder({ user_id, restaurante_id, mesa })
+
+    // Generar token único y seguro
+    const token = generateSecureToken() // crypto.randomBytes(32).toString('hex')
+
+    // Guardar token con expiración
+    await supabase.from('order_join_tokens').insert({
+      order_id: order.id,
+      token,
+      created_by: user_id,
+      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 horas
+    })
+
+    // Generar URL de join
+    const join_url = `${BASE_URL}/join/${token}`
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        order_id: order.id,
+        token,
+        join_url,
+        qr_data: join_url,  // Mismo URL para QR
+        expires_at: expires_at
+      }
+    })
+  } catch (error) {
+    // ...
+  }
+}
+```
+
+#### 2. Tabla de Tokens
+
+```sql
+CREATE TABLE order_join_tokens (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id uuid REFERENCES orders(id) NOT NULL,
+  token text UNIQUE NOT NULL,
+  created_by uuid REFERENCES users(id),
+  expires_at timestamp NOT NULL,
+  max_uses integer DEFAULT NULL,  -- NULL = ilimitado
+  times_used integer DEFAULT 0,
+  revoked boolean DEFAULT false,
+  created_at timestamp DEFAULT now()
+);
+
+-- Índice para búsqueda rápida por token
+CREATE INDEX idx_order_join_tokens_token ON order_join_tokens(token);
+
+-- Índice para limpieza de tokens expirados
+CREATE INDEX idx_order_join_tokens_expires ON order_join_tokens(expires_at);
+```
+
+#### 3. API para Unirse a Orden
+
+```typescript
+// POST /api/orders/join
+export async function POST(request: Request) {
+  try {
+    const { token, user_id } = await request.json()
+
+    // 1. Validar token
+    const { data: tokenData, error } = await supabase
+      .from('order_join_tokens')
+      .select('*, orders(*)')
+      .eq('token', token)
+      .eq('revoked', false)
+      .single()
+
+    if (error || !tokenData) {
+      return NextResponse.json(
+        { success: false, error: 'Token inválido o expirado' },
+        { status: 400 }
+      )
+    }
+
+    // 2. Verificar expiración
+    if (new Date() > new Date(tokenData.expires_at)) {
+      return NextResponse.json(
+        { success: false, error: 'El enlace ha expirado' },
+        { status: 400 }
+      )
+    }
+
+    // 3. Verificar límite de usos (si aplica)
+    if (tokenData.max_uses && tokenData.times_used >= tokenData.max_uses) {
+      return NextResponse.json(
+        { success: false, error: 'El enlace alcanzó el límite de usos' },
+        { status: 400 }
+      )
+    }
+
+    // 4. Asociar usuario a la orden
+    await supabase.from('order_participants').insert({
+      order_id: tokenData.order_id,
+      user_id: user_id,
+      joined_via: 'token'
+    })
+
+    // 5. Incrementar contador de usos
+    await supabase
+      .from('order_join_tokens')
+      .update({ times_used: tokenData.times_used + 1 })
+      .eq('id', tokenData.id)
+
+    // 6. Retornar información de la orden
+    return NextResponse.json({
+      success: true,
+      data: {
+        order_id: tokenData.order_id,
+        mesa: tokenData.orders.mesa,
+        restaurante_id: tokenData.orders.restaurante_id
+      }
+    })
+
+  } catch (error) {
+    // ...
+  }
+}
+```
+
+#### 4. Ruta de Redirección (Opcional)
+
+```typescript
+// src/app/join/[token]/route.ts
+// Redirige al chat con el token
+export async function GET(
+  request: Request,
+  { params }: { params: { token: string } }
+) {
+  const token = params.token
+
+  // Redirigir al sistema de chat con token
+  const chatUrl = `${CHAT_BASE_URL}?join_token=${token}`
+
+  return NextResponse.redirect(chatUrl)
+}
+```
+
+#### 5. Gestión de Tokens
+
+```typescript
+// API para revocar token (creador puede cancelar el enlace)
+// PUT /api/orders/{order_id}/revoke-token
+export async function PUT(request: Request) {
+  // Validar que el usuario es el creador
+  // Marcar token como revoked
+}
+
+// Cronjob para limpiar tokens expirados
+// Ejecutar diariamente
+export async function cleanupExpiredTokens() {
+  await supabase
+    .from('order_join_tokens')
+    .delete()
+    .lt('expires_at', new Date().toISOString())
+}
+```
+
+### 🔒 Seguridad
+
+1. **Tokens Únicos y Aleatorios**: Usar `crypto.randomBytes()` para generar tokens impredecibles
+2. **Expiración Automática**: Tokens válidos por 24 horas
+3. **Revocación**: Creador puede revocar el enlace en cualquier momento
+4. **Límite de Usos** (opcional): Limitar a X personas que pueden unirse
+5. **HTTPS Obligatorio**: Todos los enlaces deben ser HTTPS
+6. **Rate Limiting**: Limitar intentos de join por IP
+
+### ✅ Ventajas de Esta Solución
+
+1. **Máxima Flexibilidad**: Usuario elige QR o enlace según convenga
+2. **Muy Conveniente**: Compartir por WhatsApp es natural y fácil
+3. **Seguro**: Token único imposible de adivinar
+4. **No Requiere Memorizar Nada**: El enlace se comparte automáticamente
+5. **Experiencia Móvil Nativa**: Click en enlace = unirse inmediatamente
+6. **Escalable**: Misma lógica sirve para cualquier cantidad de usuarios
+7. **Revocable**: Creador puede cancelar acceso si es necesario
+
+---
+
 ## 🎯 Decisiones Arquitectónicas
 
 ### ✅ Decisiones Tomadas
@@ -640,20 +915,30 @@ creado_en         timestamp
 3. **Sistema de Notificaciones Asíncrono**: No bloquear las respuestas de API
 4. **Estado en Base de Datos**: BD como única fuente de verdad
 5. **APIs REST**: Comunicación stateless con clientes externos
+6. **✨ Asociación de Usuarios a Órdenes**: **QR Dinámico + Enlace Compartible**
+   - Primera persona escanea QR de mesa → Crea orden → Sistema genera QR + Enlace
+   - Usuario puede mostrar QR en pantalla O compartir enlace por chat
+   - Enlace incluye token único: `https://meetgar.app/join/{token}`
+   - Token válido por 24 horas
+7. **✨ Notificaciones**: **Webhooks con Retry + Fallback Polling**
+   - Sistema envía webhooks a URLs registradas
+   - Retry 3 veces con exponential backoff (1s, 5s, 15s)
+   - Si falla, guardar en tabla `webhook_failed_deliveries`
+   - Sistemas externos pueden hacer polling como backup
 
 ### ⏳ Decisiones Pendientes
 
-- [ ] **Canal de notificaciones principal**: ¿WebSocket, Polling, Webhooks, Push?
+- [ ] **Autenticación de clientes**: ¿Anónimos con sesión o login con Google/email?
 - [ ] **Manejo de productos compartidos**: ¿Cómo dividir "1 pizza entre 3 personas"?
-- [ ] **Sistema de autorización de órdenes**: ¿Necesario en este flujo?
 - [ ] **Tracking de ubicación**: ¿Es necesario si todo es por mesa?
 - [ ] **Integración con sistemas de pago**: ¿MercadoPago, Stripe, otros?
 - [ ] **Reportes y analítica**: ¿En este módulo o módulo separado?
+- [ ] **Control de stock en tiempo real**: ¿Necesario o suficiente con flag `disponible`?
 
-### 🤔 Preguntas para Definir
+### 🤔 Preguntas para Definir (Actualizadas)
 
-1. **Notificaciones en tiempo real**: ¿Qué tan crítico es? ¿WebSocket o polling cada X segundos?
-2. **Identificación de mesas**: ¿El QR tiene el número de mesa o el usuario lo ingresa?
+1. ~~**Notificaciones en tiempo real**~~ - ✅ **RESUELTO**: Webhooks con retry
+2. ~~**Identificación de mesas**~~ - ✅ **RESUELTO**: QR de mesa incluye número, token para unirse
 3. **Autenticación de usuarios**: ¿Los clientes se autentican o son anónimos?
 4. **Cancelaciones**: ¿Quién puede cancelar un pedido ya pagado?
 5. **Stock**: ¿Controlar disponibilidad en tiempo real o confiar en flag `disponible`?
@@ -662,12 +947,31 @@ creado_en         timestamp
 
 ## 🚀 Próximos Pasos
 
-1. **Definir respuestas a preguntas pendientes**
-2. **Refinar modelo de datos según decisiones**
-3. **Diseñar estructura de carpetas para módulos**
-4. **Crear prototipos de endpoints críticos**
-5. **Implementar sistema de notificaciones básico**
-6. **Testing de flujos principales**
+### Inmediatos (Diseño)
+1. ✅ **Definir sistema de asociación de usuarios** - COMPLETADO (QR + Enlace)
+2. ✅ **Definir sistema de notificaciones** - COMPLETADO (Webhooks con retry)
+3. **Definir autenticación de clientes** - PENDIENTE
+4. **Definir manejo de productos compartidos** - PENDIENTE
+5. **Actualizar modelo de datos con nuevas tablas**:
+   - `order_join_tokens`
+   - `order_participants`
+   - `webhook_subscriptions`
+   - `webhook_failed_deliveries`
+
+### Siguientes (Implementación)
+1. **Implementar endpoints core**:
+   - `POST /api/orders` (con generación de token)
+   - `POST /api/orders/join`
+   - `POST /api/webhooks/subscribe`
+   - `POST /api/payments` (con trigger de webhooks)
+2. **Implementar Event Manager + Webhook Dispatcher**
+3. **Crear estructura de carpetas modular**:
+   - `src/lib/business-logic/orders/`
+   - `src/lib/business-logic/slips/`
+   - `src/lib/webhooks/`
+   - `src/lib/events/`
+4. **Testing de flujos principales**
+5. **Documentar APIs con ejemplos de request/response**
 
 ---
 
