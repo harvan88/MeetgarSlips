@@ -24,23 +24,73 @@
 
 ## 📖 Project Overview
 
-**MeetgarSlips** is a mobile-first restaurant ordering application that allows diners to create individual orders ("slips") that can be grouped into collective orders and shared among users. The system supports split payments, real-time location tracking, and role-based access control.
+**MeetgarSlips** es un **módulo de lógica de negocio backend** para gestión de comandas (slips) en restaurantes. Este proyecto se enfoca exclusivamente en la **lógica de procesamiento de pedidos** y **distribución de notificaciones** entre diferentes actores del sistema.
+
+### 🎯 Alcance del Proyecto
+
+**⚠️ IMPORTANTE**: Este módulo **NO se encarga de**:
+- Interfaz de usuario (UI/Frontend)
+- Sistema de chat
+- Inteligencia Artificial (IA)
+
+**✅ Este módulo SÍ se encarga de**:
+- Lógica completa de procesamiento de comandas/slips
+- API REST (endpoints POST/GET) para comunicación con otros sistemas
+- Distribución de notificaciones entre: meseros, cocina, caja, barra, cliente
+- Gestión del flujo de estados de pedidos
+- Control de autorización y permisos
+- Orquestación entre diferentes instancias del negocio
+
+### 🏗️ Arquitectura Modular Incremental
+
+El sistema está diseñado bajo un **paradigma de modulación incremental**, permitiendo crear instancias separadas de responsabilidades:
+
+**Módulos Planificados**:
+1. **Core de Slips**: Recepción y procesamiento de comandas
+2. **Sistema de Notificaciones**: Distribución inteligente a diferentes actores
+3. **Gestión de Menú**: Administración de productos y disponibilidad
+4. **Control de Stock**: Inventario y disponibilidad en tiempo real
+5. **Módulo de Caja**: Gestión de pagos y facturación
+6. **Módulo de Barra**: Gestión específica de bebidas
+7. **Módulo de Cocina**: Gestión de preparación de alimentos
+8. **Administración**: Panel de control y configuración
+
+### 📊 Estado Actual del Proyecto
+
+**Fase**: Ideación y diseño arquitectónico
+
+El proyecto está en proceso de definición de la mejor arquitectura posible para crear un componente **robusto, escalable y modular**. Las decisiones arquitectónicas priorizan:
+
+- Separación de responsabilidades (Separation of Concerns)
+- Escalabilidad horizontal
+- Facilidad de integración con sistemas externos
+- Resiliencia y tolerancia a fallos
+- Mantenibilidad a largo plazo
+
+### 🔌 Integración con Sistemas Externos
+
+Este módulo expone APIs REST que pueden ser consumidas por:
+- Aplicaciones frontend (web, móvil)
+- Sistemas de chat y atención al cliente
+- Sistemas de IA para procesamiento de pedidos por voz/texto
+- Sistemas de punto de venta (POS)
+- Aplicaciones de gestión de restaurante
 
 ### Main Components
 
-1. **meetgar-app**: Next.js 15 mobile web application (primary frontend)
-2. **asistente-ia**: OpenAI-powered CLI tool for code review and assistance
-3. **scripts-python**: Python utility scripts for automation
+1. **meetgar-app**: Módulo principal de lógica de negocio y APIs (Next.js 15)
+2. **asistente-ia**: Herramienta CLI para revisión de código (desarrollo)
+3. **scripts-python**: Scripts de utilidad para automatización
 
 ### Core Functionality
 
-- **Slip Management**: Individual orders that can be grouped into collective orders
-- **Order Grouping**: Multiple users can join and share orders
-- **Payment Splitting**: Partial or full payments by user or product
-- **Real-time Updates**: Chat-like interface for viewing orders
-- **Authorization Control**: Slip creators can authorize other users to join
-- **Role-based Access**: Support for cliente, mesero, cocina, and admin roles
-- **Location Tracking**: Real-time user location management
+- **Gestión de Slips**: Creación, modificación y agrupación de comandas
+- **Sistema de Notificaciones**: Distribución inteligente a meseros, cocina, caja, barra
+- **Control de Estados**: Gestión del ciclo de vida de pedidos
+- **División de Pagos**: Pagos parciales por usuario o producto
+- **Control de Autorizaciones**: Gestión de permisos entre usuarios
+- **Roles Diferenciados**: cliente, mesero, cocina, caja, barra, admin
+- **Tracking de Ubicaciones**: Gestión de ubicaciones en tiempo real
 
 ---
 
@@ -48,26 +98,29 @@
 
 ```
 MeetgarSlips/
-├── meetgar-app/                    # Main Next.js application
+├── meetgar-app/                    # Módulo principal de lógica de negocio
 │   ├── src/
-│   │   ├── app/                   # Next.js App Router pages
-│   │   │   ├── (app)/            # Authenticated app routes
-│   │   │   ├── api/              # API route handlers
-│   │   │   ├── auth/             # Authentication routes
-│   │   │   ├── dashboard/        # Dashboard page
-│   │   │   ├── login/            # Login page
-│   │   │   ├── restaurante/      # Restaurant pages
-│   │   │   ├── layout.tsx        # Root layout
-│   │   │   └── page.tsx          # Home page
-│   │   ├── componentes/          # React components
-│   │   └── lib/                  # Utilities and configurations
-│   │       ├── supabase/         # Supabase client configurations
-│   │       ├── database.types.ts # Database type definitions
-│   │       └── supabaseClient.ts # Supabase client setup
-│   ├── public/                    # Static assets
+│   │   ├── app/
+│   │   │   ├── api/              # ⭐ API REST endpoints (núcleo del sistema)
+│   │   │   │   ├── slips/        # Endpoints de gestión de comandas
+│   │   │   │   ├── orders/       # Endpoints de órdenes agrupadas
+│   │   │   │   ├── notifications/ # Sistema de notificaciones
+│   │   │   │   ├── menu/         # Gestión de menú y productos
+│   │   │   │   ├── stock/        # Control de inventario
+│   │   │   │   └── payments/     # Procesamiento de pagos
+│   │   │   ├── (app)/            # Rutas de app (legacy/opcional)
+│   │   │   ├── auth/             # Autenticación y autorización
+│   │   │   └── [otras rutas]     # Otras rutas según necesidad
+│   │   ├── componentes/          # Componentes (si se necesita UI mínima)
+│   │   └── lib/                  # Lógica de negocio y utilidades
+│   │       ├── supabase/         # Cliente de base de datos
+│   │       ├── database.types.ts # Tipos de TypeScript de BD
+│   │       ├── notifications/    # Sistema de notificaciones
+│   │       ├── business-logic/   # Lógica de negocio modular
+│   │       └── utils/            # Utilidades compartidas
 │   ├── package.json
 │   ├── tsconfig.json
-│   └── tailwind.config.js
+│   └── tailwind.config.js        # (opcional, solo si hay UI)
 │
 ├── asistente-ia/                   # AI Assistant CLI tool
 │   ├── cli/                       # CLI entry points
@@ -99,17 +152,23 @@ MeetgarSlips/
 
 ## 🛠️ Technology Stack
 
-### meetgar-app (Frontend)
+### meetgar-app (Backend API / Business Logic)
 
-- **Framework**: Next.js 15.3.1 (App Router)
-- **React**: 19.0.0
-- **Language**: TypeScript 5+
-- **Styling**: Tailwind CSS 4.1.5
+- **Framework**: Next.js 15.3.1 (usado como backend API con App Router)
+- **Runtime**: Node.js con React 19.0.0 (Server Components para APIs)
+- **Language**: TypeScript 5+ (strict mode)
 - **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth with Google OAuth
-- **State Management**: React Server Components + Client Components
+- **Authentication**: Supabase Auth (para protección de endpoints)
+- **API Architecture**: REST API (POST/GET endpoints)
 - **Testing**: Vitest 3.1.3
-- **Package Manager**: npm (can also use pnpm/yarn/bun)
+- **Package Manager**: npm (compatible con pnpm/yarn/bun)
+- **Styling**: Tailwind CSS 4.1.5 (opcional, solo si se necesita UI administrativa)
+
+**Nota sobre Next.js**: Aunque Next.js es tradicionalmente un framework fullstack, en este proyecto se utiliza **principalmente para sus capacidades de backend**:
+- API Routes para endpoints REST
+- Server Components para lógica del lado del servidor
+- Middleware para autenticación y autorización
+- Edge Runtime (opcional) para mejor performance
 
 ### asistente-ia (CLI Tool)
 
@@ -287,23 +346,33 @@ OPENAI_API_KEY=sk-your_openai_key
    - API routes go in `src/app/api/`
    - Pages use App Router convention in `src/app/`
 
-### React/Next.js Patterns
+### API y Backend Patterns
 
-1. **Server Components by Default**: Use React Server Components unless client interactivity is needed
-2. **Client Components**: Add `'use client'` directive when needed
-3. **Mobile-First Design**: Always design for mobile screens first
-4. **Tailwind CSS**: Use utility classes, avoid custom CSS when possible
+1. **API Routes como Core**: Las rutas en `src/app/api/` son el núcleo del sistema
+2. **Server-Side Only**: Todo el procesamiento debe ocurrir en el servidor (no en cliente)
+3. **RESTful Design**: Seguir principios REST para endpoints (GET, POST, PUT, DELETE)
+4. **Response Format Consistente**:
+   ```typescript
+   { success: boolean, data?: any, error?: string, message?: string }
+   ```
 5. **Supabase Client**:
-   - Server components: Use `createSupabaseServerClient()` from `@/lib/supabase/server`
-   - Client components: Use `createBrowserClient()` from `@/lib/supabase/client`
+   - APIs: Usar siempre `createSupabaseServerClient()` from `@/lib/supabase/server`
+   - No usar clientes del lado del navegador en este proyecto
+6. **Validación de Entrada**: Validar todos los datos de entrada en cada endpoint
+7. **Manejo de Errores**: Try-catch en todos los endpoints con respuestas apropiadas
 
-### Architecture Principles
+### Architecture Principles (Arquitectura Modular)
 
-1. **No Hydration Errors**: Be careful with server/client component boundaries
-2. **Respect Existing Structure**: Don't modify folder structure without justification
-3. **Mobile-First**: Primary target is mobile devices (WhatsApp-like UX)
-4. **Type Safety**: Always use TypeScript types from `database.types.ts`
-5. **Authentication Flow**: Google OAuth → callback → sync user → dashboard
+1. **Separation of Concerns**: Cada módulo tiene una responsabilidad única y bien definida
+2. **Modulación Incremental**: Los módulos pueden desarrollarse y desplegarse independientemente
+3. **API-First Design**: La lógica de negocio se expone vía API REST
+4. **Desacoplamiento Frontend/Backend**: No asumir ningún frontend específico
+5. **Type Safety**: Siempre usar tipos de TypeScript desde `database.types.ts`
+6. **Sistema de Notificaciones**: Arquitectura pub-sub para distribución de eventos
+7. **Escalabilidad Horizontal**: Diseño que permite múltiples instancias
+8. **Estado en Base de Datos**: La base de datos es la única fuente de verdad
+9. **Idempotencia**: Las operaciones deben ser seguras para reintentos
+10. **Logging y Observabilidad**: Registrar eventos importantes para debugging
 
 ### Git Workflow
 
@@ -351,44 +420,56 @@ OPENAI_API_KEY=sk-your_openai_key
 
 2. **Follow the Style Guide**:
    - Use the existing code style
-   - Follow mobile-first design principles
+   - Focus on backend/API development (not UI)
    - Maintain TypeScript strict mode compliance
+   - Follow modular architecture principles
 
 3. **Test Your Changes**:
-   - Run the dev server and test locally
+   - Test API endpoints with tools like Postman, curl, or Thunder Client
    - Check for TypeScript errors: `npm run build`
    - Run linter: `npm run lint`
-   - Test authentication flows if touching auth
+   - Verify authentication/authorization in endpoints
+   - Test database operations and transactions
 
 4. **Avoid Common Mistakes**:
-   - Don't modify root `page.tsx` unnecessarily (it's the default Next.js template)
-   - Don't break the App Router structure
-   - Don't introduce hydration errors
+   - Don't create UI components unless explicitly needed
+   - Don't mix frontend logic with backend API logic
+   - Don't expose sensitive data in API responses
    - Don't modify Supabase client configurations without understanding implications
-   - Don't commit environment files
+   - Don't commit environment files (.env, .env.local)
+   - Don't skip input validation in API endpoints
+   - Don't assume frontend structure (this is backend only)
 
-### Adding New Features
+### Adding New Features (Módulos y APIs)
 
-1. **Database Changes**:
-   - Update Supabase schema via Supabase dashboard
-   - Regenerate types (if type generation is set up)
-   - Update `estructura de tablas supabase.json` if needed
+1. **Nuevos Módulos**:
+   - Diseñar el módulo con responsabilidad única
+   - Crear carpeta en `src/lib/business-logic/<modulo>/`
+   - Definir interfaces y tipos en TypeScript
+   - Implementar lógica de negocio independiente
+   - Crear endpoints API correspondientes
 
-2. **New Pages**:
-   - Create in appropriate location under `src/app/`
-   - Use Server Components by default
-   - Follow existing layout patterns
+2. **Nuevos API Endpoints**:
+   - Crear en `src/app/api/<recurso>/route.ts`
+   - Implementar métodos HTTP necesarios (GET, POST, PUT, DELETE)
+   - Validar entrada con TypeScript y validación runtime
+   - Usar `createSupabaseServerClient()` para operaciones de BD
+   - Implementar manejo de errores robusto
+   - Retornar códigos HTTP apropiados (200, 201, 400, 401, 404, 500)
+   - Documentar el endpoint (parámetros, respuestas, errores)
 
-3. **New Components**:
-   - Place in `src/componentes/`
-   - Use TypeScript with proper types
-   - Follow mobile-first responsive design
+3. **Sistema de Notificaciones**:
+   - Definir tipo de notificación y destinatarios
+   - Implementar en `src/lib/notifications/`
+   - Registrar eventos en base de datos
+   - Considerar integración con servicios externos (webhooks, push notifications)
 
-4. **New API Routes**:
-   - Create in `src/app/api/`
-   - Use Supabase server client
-   - Handle errors properly
-   - Return proper HTTP status codes
+4. **Cambios en Base de Datos**:
+   - Actualizar schema en Supabase dashboard
+   - Regenerar tipos TypeScript (si está configurado)
+   - Actualizar `estructura de tablas supabase.json`
+   - Considerar migraciones y retrocompatibilidad
+   - Documentar cambios en el schema
 
 ### Using the AI Assistant (asistente-ia)
 
@@ -428,120 +509,247 @@ Each role has specialized knowledge configured in `asistente-ia/roles/*/prompt.m
 - Run tests: `pnpm test`
 - Tests include file reading and git diff functionality
 
-### Manual Testing Checklist
+### Manual Testing Checklist (API Testing)
 
-- [ ] Authentication flow (Google login → callback → dashboard)
-- [ ] Mobile responsiveness (test on actual mobile device if possible)
-- [ ] Supabase queries (check RLS policies if permission errors)
-- [ ] API routes (test with different user roles)
-- [ ] Error handling (network errors, auth errors, etc.)
+- [ ] **Endpoints de Autenticación**: Verificar tokens y autorización
+- [ ] **Endpoints de Slips**: Crear, leer, actualizar, eliminar comandas
+- [ ] **Sistema de Notificaciones**: Verificar distribución a meseros, cocina, caja
+- [ ] **Control de Roles**: Probar endpoints con diferentes roles (cliente, mesero, cocina, admin)
+- [ ] **Validación de Entrada**: Enviar datos inválidos y verificar respuestas 400
+- [ ] **Manejo de Errores**: Network errors, auth errors, database errors
+- [ ] **Row-Level Security (RLS)**: Verificar que políticas de Supabase funcionan correctamente
+- [ ] **Transacciones**: Operaciones que requieren múltiples cambios en BD
+- [ ] **Idempotencia**: Reintentar operaciones y verificar resultados consistentes
+- [ ] **Performance**: Medir tiempos de respuesta de endpoints críticos
+
+**Herramientas Recomendadas**:
+- Postman o Insomnia para testing de APIs
+- Thunder Client (extensión VS Code)
+- curl para testing rápido desde terminal
+- Vitest para tests automatizados
 
 ---
 
 ## 🔄 Common Patterns
 
-### Supabase Query Pattern (Server Component)
+### Patrón Base de API Route
 
 ```typescript
-import { createSupabaseServerClient } from '@/lib/supabase/server'
-
-export default async function MyPage() {
-  const supabase = await createSupabaseServerClient()
-
-  const { data, error } = await supabase
-    .from('slips')
-    .select('*')
-    .eq('user_id', userId)
-
-  if (error) {
-    // Handle error
-  }
-
-  return (
-    // Render data
-  )
-}
-```
-
-### API Route Pattern
-
-```typescript
+// src/app/api/slips/route.ts
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
-  const supabase = await createSupabaseServerClient()
+  try {
+    const supabase = await createSupabaseServerClient()
 
-  // Get authenticated user
-  const { data: { user } } = await supabase.auth.getUser()
+    // 1. Autenticación
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: 'No autorizado' },
+        { status: 401 }
+      )
+    }
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // 2. Validación de entrada
+    const body = await request.json()
+    if (!body.required_field) {
+      return NextResponse.json(
+        { success: false, error: 'Campo requerido faltante' },
+        { status: 400 }
+      )
+    }
+
+    // 3. Lógica de negocio
+    const { data, error } = await supabase
+      .from('slips')
+      .insert({ ...body, user_id: user.id })
+      .select()
+      .single()
+
+    if (error) throw error
+
+    // 4. Respuesta exitosa
+    return NextResponse.json(
+      { success: true, data },
+      { status: 201 }
+    )
+
+  } catch (error) {
+    console.error('Error en POST /api/slips:', error)
+    return NextResponse.json(
+      { success: false, error: 'Error interno del servidor' },
+      { status: 500 }
+    )
   }
+}
 
-  // Process request
-  const body = await request.json()
+export async function GET(request: Request) {
+  try {
+    const supabase = await createSupabaseServerClient()
+    const { searchParams } = new URL(request.url)
 
-  // Return response
-  return NextResponse.json({ success: true })
+    const orderId = searchParams.get('order_id')
+
+    const { data, error } = await supabase
+      .from('slips')
+      .select('*, slip_productos(*)')
+      .eq('order_id', orderId)
+
+    if (error) throw error
+
+    return NextResponse.json({ success: true, data })
+
+  } catch (error) {
+    console.error('Error en GET /api/slips:', error)
+    return NextResponse.json(
+      { success: false, error: 'Error al obtener slips' },
+      { status: 500 }
+    )
+  }
 }
 ```
 
-### Mobile-First Tailwind Pattern
+### Patrón de Módulo de Lógica de Negocio
 
-```tsx
-// Stack on mobile, row on desktop
-<div className="flex flex-col sm:flex-row gap-4">
-  {/* Content */}
-</div>
+```typescript
+// src/lib/business-logic/slips/slipManager.ts
+import { Database } from '@/lib/database.types'
 
-// Full width on mobile, fixed width on desktop
-<div className="w-full sm:w-auto">
-  {/* Content */}
-</div>
+type Slip = Database['public']['Tables']['slips']['Row']
+type SlipInsert = Database['public']['Tables']['slips']['Insert']
 
-// Responsive padding
-<div className="p-4 sm:p-6 lg:p-8">
-  {/* Content */}
-</div>
+export class SlipManager {
+  constructor(private supabase: any) {}
+
+  async createSlip(data: SlipInsert): Promise<Slip> {
+    const { data: slip, error } = await this.supabase
+      .from('slips')
+      .insert(data)
+      .select()
+      .single()
+
+    if (error) throw new Error(`Error creando slip: ${error.message}`)
+    return slip
+  }
+
+  async getSlipsByOrder(orderId: string): Promise<Slip[]> {
+    const { data, error } = await this.supabase
+      .from('slips')
+      .select('*')
+      .eq('order_id', orderId)
+
+    if (error) throw new Error(`Error obteniendo slips: ${error.message}`)
+    return data || []
+  }
+
+  async updateSlipStatus(slipId: string, estado: string): Promise<Slip> {
+    const { data, error } = await this.supabase
+      .from('slips')
+      .update({ estado, actualizado_en: new Date().toISOString() })
+      .eq('id', slipId)
+      .select()
+      .single()
+
+    if (error) throw new Error(`Error actualizando slip: ${error.message}`)
+
+    // Trigger notificación
+    await this.notifyStatusChange(data)
+
+    return data
+  }
+
+  private async notifyStatusChange(slip: Slip) {
+    // Lógica de notificación
+    // Enviar a meseros, cocina, cliente según el estado
+  }
+}
+```
+
+### Patrón de Sistema de Notificaciones
+
+```typescript
+// src/lib/notifications/notificationManager.ts
+type NotificationType = 'slip_created' | 'slip_updated' | 'order_ready' | 'payment_received'
+type RecipientRole = 'cliente' | 'mesero' | 'cocina' | 'caja' | 'barra'
+
+interface Notification {
+  type: NotificationType
+  recipients: RecipientRole[]
+  data: any
+  priority: 'low' | 'medium' | 'high'
+}
+
+export class NotificationManager {
+  async distribute(notification: Notification) {
+    // Lógica para distribuir según destinatarios
+    for (const role of notification.recipients) {
+      await this.sendToRole(role, notification)
+    }
+  }
+
+  private async sendToRole(role: RecipientRole, notification: Notification) {
+    // Implementación: webhook, push notification, websocket, etc.
+    console.log(`Enviando notificación a ${role}:`, notification)
+  }
+}
 ```
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Common Issues
+### Common Issues (Backend/API)
 
-1. **Hydration Errors**
-   - **Cause**: Mismatch between server and client rendering
-   - **Solution**: Check for `'use client'` directive, ensure data is consistent
+1. **API Route 401 (Unauthorized)**
+   - **Causa**: Usuario no autenticado o token inválido
+   - **Solución**: Verificar que el cliente envía headers de autenticación correctos, revisar configuración de Supabase Auth
 
-2. **Supabase Auth Errors**
-   - **Cause**: Missing environment variables or incorrect configuration
-   - **Solution**: Verify `.env.local` has correct Supabase credentials
+2. **API Route 500 (Internal Server Error)**
+   - **Causa**: Error no manejado en lógica de negocio o database query
+   - **Solución**: Revisar logs del servidor, verificar try-catch en endpoints, validar queries de Supabase
 
-3. **Import Errors**
-   - **Cause**: Incorrect path or missing `@/` alias
-   - **Solution**: Use `@/` for imports from `src/`, check tsconfig paths
+3. **Errores de Supabase Auth**
+   - **Causa**: Variables de entorno faltantes o incorrectas
+   - **Solución**: Verificar `.env.local` tiene `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-4. **TypeScript Errors in Database Queries**
-   - **Cause**: Database types are out of sync
-   - **Solution**: Check `database.types.ts` and update if schema changed
+4. **Errores de TypeScript en Database Queries**
+   - **Causa**: Tipos de base de datos desactualizados
+   - **Solución**: Regenerar `database.types.ts` desde Supabase, actualizar schema si cambió
 
-5. **Build Errors**
-   - **Cause**: TypeScript strict mode violations
-   - **Solution**: Fix type errors, don't use `any`, handle null/undefined properly
+5. **Row-Level Security (RLS) Errors**
+   - **Causa**: Políticas RLS de Supabase bloquean operaciones
+   - **Solución**: Revisar políticas en Supabase Dashboard, verificar que usuario tiene permisos correctos
 
-6. **API Route 401 Errors**
-   - **Cause**: User not authenticated
-   - **Solution**: Check auth flow, verify cookies are being passed
+6. **CORS Errors (en desarrollo con clientes externos)**
+   - **Causa**: Next.js no permite requests desde otros orígenes
+   - **Solución**: Configurar CORS headers en `next.config.js` o en API routes individuales
+
+7. **Database Connection Errors**
+   - **Causa**: Límite de conexiones excedido o timeout
+   - **Solución**: Verificar conexión a Supabase, considerar connection pooling, revisar firewall
+
+8. **Import Errors**
+   - **Causa**: Path incorrecto o alias `@/` no configurado
+   - **Solución**: Usar `@/` para imports desde `src/`, verificar `tsconfig.json` paths
+
+9. **Build Errors (TypeScript Strict)**
+   - **Causa**: Violaciones de TypeScript strict mode
+   - **Solución**: Corregir errores de tipos, no usar `any`, manejar null/undefined apropiadamente
+
+10. **Webhook/Notification Failures**
+    - **Causa**: Sistema de notificaciones no alcanza destinatarios
+    - **Solución**: Verificar logs, revisar configuración de webhooks, validar endpoints de destino
 
 ### Getting Help
 
-- Check existing documentation files in the repository
-- Review recent commit messages for context
-- Use the asistente-ia tool for code review
-- Test in development mode first before building
+- Revisar documentación en el repositorio
+- Analizar commits recientes para contexto
+- Usar `asistente-ia` para code review: `pnpm ia:review bd <archivo>`
+- Testear en modo desarrollo antes de build
+- Revisar logs del servidor con `console.error`
+- Usar herramientas de debugging como Postman o curl
 
 ---
 
@@ -551,11 +759,13 @@ export async function POST(request: Request) {
 
 | What | Where |
 |------|-------|
-| React Components | `meetgar-app/src/componentes/` |
-| Pages | `meetgar-app/src/app/` |
-| API Routes | `meetgar-app/src/app/api/` |
+| **API Routes** (núcleo) | `meetgar-app/src/app/api/` |
+| **Lógica de Negocio** | `meetgar-app/src/lib/business-logic/` |
+| **Sistema de Notificaciones** | `meetgar-app/src/lib/notifications/` |
 | Supabase Clients | `meetgar-app/src/lib/supabase/` |
 | Database Types | `meetgar-app/src/lib/database.types.ts` |
+| Utilidades | `meetgar-app/src/lib/utils/` |
+| Componentes (si existen) | `meetgar-app/src/componentes/` |
 | AI Assistant Roles | `asistente-ia/roles/` |
 | Database Schema | `estructura de tablas supabase.json` |
 
@@ -582,34 +792,66 @@ pnpm test                   # Run tests
 
 ## 📝 Notes for AI Assistants
 
+### ⚠️ CRÍTICO: Entender el Alcance del Proyecto
+
+**Este NO es un proyecto de frontend/UI. Este es un BACKEND de lógica de negocio.**
+
+- ❌ NO crear componentes de UI a menos que sea absolutamente necesario
+- ❌ NO asumir que habrá interfaz de usuario
+- ❌ NO implementar features de chat o IA (están fuera del alcance)
+- ✅ SÍ enfocarse en APIs REST y lógica de negocio
+- ✅ SÍ diseñar para ser consumido por clientes externos
+- ✅ SÍ pensar en arquitectura modular y escalable
+
 ### When Assisting with This Codebase
 
-1. **Always prioritize mobile-first design** - This is a mobile app, desktop is secondary
-2. **Respect the existing architecture** - Don't restructure unless explicitly asked
-3. **Use TypeScript strictly** - No `any` types, handle all nullables
-4. **Follow the App Router pattern** - Server Components by default
-5. **Check documentation first** - Review relevant .md files before making changes
-6. **Test authentication flows** - Many features require authenticated users
-7. **Understand the database schema** - Review `estructura de tablas supabase.json`
-8. **Don't modify configuration files** without clear justification
-9. **Follow git branch naming** - Use `claude/` prefix for feature branches
-10. **Be cautious with Supabase clients** - Use the correct client (server vs browser)
+1. **Backend API-First** - El núcleo son los endpoints REST en `src/app/api/`
+2. **Arquitectura Modular Incremental** - Cada módulo debe ser independiente y escalable
+3. **Use TypeScript Strictly** - No usar `any`, manejar todos los tipos y nullables
+4. **Sistema de Notificaciones** - Considerar distribución a meseros, cocina, caja, barra, cliente
+5. **Review Documentation First** - Revisar archivos .md relevantes antes de hacer cambios
+6. **Understand Database Schema** - Revisar `estructura de tablas supabase.json` detalladamente
+7. **Separation of Concerns** - Lógica de negocio separada de APIs, modular por responsabilidad
+8. **Don't Modify Config Files** - No modificar configuraciones sin justificación clara
+9. **Git Branch Naming** - Usar prefijo `claude/` para feature branches
+10. **Server-Side Only** - Solo usar `createSupabaseServerClient()`, no clientes de browser
+11. **Estado de Ideación** - El proyecto está en fase de diseño arquitectónico, ser flexible
+12. **Pensar en Escalabilidad** - Diseñar para múltiples instancias y alta carga
 
 ### Understanding User Roles
 
-- **cliente**: End user who creates slips and makes orders
-- **mesero**: Waiter who manages orders and serves customers
-- **cocina**: Kitchen staff who prepare orders
-- **admin**: Administrator with full access
+- **cliente**: Usuario final que crea slips y hace pedidos
+- **mesero**: Camarero que gestiona órdenes y atiende clientes (recibe notificaciones)
+- **cocina**: Personal de cocina que prepara pedidos (recibe notificaciones de cocina)
+- **caja**: Personal de caja que procesa pagos (recibe notificaciones de pago)
+- **barra**: Personal de barra que prepara bebidas (recibe notificaciones de bebidas)
+- **admin**: Administrador con acceso completo al sistema
 
 ### Key Business Logic
 
-- A **slip** is an individual order by one user
-- An **order** groups multiple slips together
-- Users can request to join an order (requires authorization)
-- Payments can be split by product or by user
-- Real-time location helps coordinate deliveries
-- The UI should feel like WhatsApp (familiar, mobile-native)
+- Un **slip** es una comanda individual creada por un usuario
+- Una **order** agrupa múltiples slips de diferentes usuarios
+- Los usuarios pueden solicitar unirse a una orden (requiere autorización del creador)
+- Los **pagos** pueden dividirse por producto o por usuario
+- El **sistema de notificaciones** distribuye eventos a diferentes roles según el contexto:
+  - Nuevo slip → mesero + cocina/barra según productos
+  - Cambio de estado → cliente + mesero
+  - Pago recibido → caja + mesero + cliente
+  - Pedido listo → mesero + cliente
+- La **ubicación en tiempo real** ayuda a coordinar entregas
+- La arquitectura permite **módulos independientes** (menú, stock, caja, etc.)
+
+### Módulos Planificados (Referencia)
+
+Al trabajar en este proyecto, considerar que la arquitectura soporta estos módulos:
+1. **Core de Slips** - Gestión de comandas
+2. **Sistema de Notificaciones** - Distribución de eventos
+3. **Gestión de Menú** - CRUD de productos
+4. **Control de Stock** - Inventario
+5. **Módulo de Caja** - Pagos y facturación
+6. **Módulo de Barra** - Bebidas
+7. **Módulo de Cocina** - Preparación de alimentos
+8. **Administración** - Configuración
 
 ---
 
